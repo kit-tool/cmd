@@ -21,9 +21,42 @@ type Store = {
   emit: () => void;
 }
 
-const Command = React.forwardRef<HTMLDivElement, CommandProps>(() => {
+const StoreContext = React.createContext<Store | undefined>(undefined)
+const useStore = () => React.useContext(StoreContext)
+
+const Command = React.forwardRef<HTMLDivElement, CommandProps>((props, forwardedRef) => {
+  const listeners = useLazyRef<Set<() => void>>(() => new Set());
+  const state = useLazyRef<State>(() => ({
+    search: '',
+    value: ''
+  }))
+
+  const store: Store = React.useMemo(() => {
+    return {
+      subscribe: (cb) => {
+        listeners.current.add(cb);
+        return () => listeners.current.delete(cb);
+      },
+      snapshot: () => {
+        return state.current;
+      },
+      setState: (key, value) => {
+        if (Object.is(state.current[key], value)) return;
+        state.current[key] = value;
+
+        // Notify subscribers that state has changed
+        store.emit();
+      },
+      emit: () => {
+        listeners.current.forEach((l) => l());
+      },
+    };
+  }, []);
+
   return (
-    <Primitive.div></Primitive.div>
+    <Primitive.div ref={forwardedRef} tabIndex={-1}>
+      <StoreContext.Provider value={store}></StoreContext.Provider>
+    </Primitive.div>
   )
 });
 
@@ -77,3 +110,13 @@ export { Input as CommandInput }
 export { Group as CommandGroup }
 export { Separator as CommandSeparator }
 export { Empty as CommandEmpty }
+
+function useLazyRef<T>(fn: () => T) {
+  const ref = React.useRef<T>()
+
+  if (ref.current === undefined) {
+    ref.current = fn()
+  }
+
+  return ref as React.MutableRefObject<T>
+}
