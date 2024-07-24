@@ -1,0 +1,47 @@
+{
+  "name": "kit-cmd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-id": "^1.1.0",
+    "@radix-ui/react-primitive": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.0.15"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kit-tool/kit-cmd.git",
+    "directory": "kit-cmd"
+  },
+  "bugs": {
+    "url": "https://github.com/kit-tool/kit-cmd/issues"
+  },
+  "homepage": "https://github.com/kit-tool/kit-cmd#readme",
+  "keywords": [
+    "cmd",
+    "command"
+  ],
+  "author": "kit-tool",
+  "license": "MIT"
+}

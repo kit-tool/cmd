@@ -1,0 +1,17 @@
+{
+  "name": "kit-cmd-root",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.2",
+    "typescript": "^5.5.4"
+  },
+  "keywords": [
+    "cmd",
+    "command"
+  ],
+  "author": "kit-tool",
+  "license": "MIT"
+}
