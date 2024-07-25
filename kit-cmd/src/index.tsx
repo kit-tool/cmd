@@ -5,12 +5,32 @@ import { useId } from "@radix-ui/react-id";
 type Children = { children?: React.ReactNode };
 type DivProps = React.ComponentPropsWithoutRef<typeof Primitive.div>;
 
+type EmptyProps = Children & DivProps & {};
+type SeparatorProps = DivProps & {
+  alwaysRender?: boolean;
+};
+
 type CommandProps = Children &
   DivProps & {
     label?: string;
     value?: string;
     onValueChange?: (value: string) => void;
     disablePointerSelection?: boolean;
+  };
+
+type ListProps = Children &
+  DivProps & {
+    label?: string;
+  };
+
+type ResultProps = Children &
+  DivProps & {
+    switchView?: boolean;
+  };
+
+type ViewProps = Children &
+  DivProps & {
+    label?: string;
   };
 
 type ItemProps = Children &
@@ -68,9 +88,10 @@ type Group = {
   id: string;
 };
 
+const GROUP_SELECTOR = `[kit-cmd-group=""]`;
 const ITEM_SELECTOR = `[kit-cmd-item=""]`;
 const VALID_ITEM_SELECTOR = `${ITEM_SELECTOR}:not([aria-disabled="true"])`;
-const SELECT_EVENT = `kit-cmd-item-select`
+const SELECT_EVENT = `kit-cmd-item-select`;
 const VALUE_ATTR = `data-value`;
 
 const CommandContext = React.createContext<Context | undefined>(undefined);
@@ -172,6 +193,10 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       store.setState("value", value || "");
     }
 
+    /**
+     * 获取选中 Item DOM
+     * @returns
+     */
     function getSelectedItem() {
       return listInnerRef.current?.querySelector(
         `${ITEM_SELECTOR}[aria-selected="true"]`
@@ -188,15 +213,65 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       );
     }
 
+    /**
+     * 更新选中的 Item
+     * @param change
+     */
+    function updateSelectedByItem(change: 1 | -1) {
+      const selected = getSelectedItem();
+    }
+
+    /**
+     * 更新选中的 Group
+     * @param change
+     */
+    function updateSelectedByGroup(change: 1 | -1) {
+      const selected = getSelectedItem();
+    }
+
+    /**
+     * 选中下一个 Item
+     * @param e
+     */
+    const next = (e: React.KeyboardEvent) => {
+      e.preventDefault();
+
+      if (e.altKey) {
+        updateSelectedByGroup(1);
+      } else {
+        updateSelectedByItem(1);
+      }
+    };
+
+    /**
+     * 选中上一个 Item
+     * @param e
+     */
+    const prev = (e: React.KeyboardEvent) => {
+      e.preventDefault();
+
+      if (e.altKey) {
+        updateSelectedByGroup(-1);
+      } else {
+        updateSelectedByItem(-1);
+      }
+    };
+
+    /**
+     * 按键事件处理
+     * @param e
+     */
     function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
       etc.onKeyDown?.(e);
 
       if (!e.defaultPrevented) {
         switch (e.key) {
           case "ArrowDown": {
+            next(e);
             break;
           }
           case "ArrowUp": {
+            prev(e);
             break;
           }
           case "Home": {
@@ -209,18 +284,18 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             e.preventDefault();
             break;
           }
-          case 'Enter': {
+          case "Enter": {
             // Check if IME composition is finished before triggering onSelect
             // This prevents unwanted triggering while user is still inputting text with IME
             // e.keyCode === 229 is for the Japanese IME and Safari.
             // isComposing does not work with Japanese IME and Safari combination.
             if (!e.nativeEvent.isComposing && e.keyCode !== 229) {
               // Trigger item onSelect
-              e.preventDefault()
-              const item = getSelectedItem()
+              e.preventDefault();
+              const item = getSelectedItem();
               if (item) {
-                const event = new Event(SELECT_EVENT)
-                item.dispatchEvent(event)
+                const event = new Event(SELECT_EVENT);
+                item.dispatchEvent(event);
               }
             }
           }
@@ -332,9 +407,18 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
   }
 );
 
-const Separator = () => {
-  return <Primitive.div></Primitive.div>;
-};
+/**
+ * Item 或 Group 之间使用的分隔
+ */
+const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
+  (props, forwardedRef) => {
+    const { alwaysRender, ...etc } = props;
+    const render = useCmd((state) => !state.search);
+
+    if (!alwaysRender && !render) return null;
+    return <Primitive.div ref={forwardedRef} {...etc} kit-cmd-separator="" />;
+  }
+);
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (props, forwardedRef) => {
@@ -371,17 +455,35 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-const List = () => {
-  return <Primitive.div></Primitive.div>;
-};
+const List = React.forwardRef<HTMLDivElement, ListProps>(
+  (props, forwardedRef) => {
+    const { children, label = "Suggestions", ...etc } = props;
+    const ref = React.useRef<HTMLDivElement>(null);
+    return (
+      <Primitive.div
+        ref={mergeRefs([ref, forwardedRef])}
+        {...etc}
+        kit-cmd-list=""
+        role="listbox"
+        aria-label={label}
+      ></Primitive.div>
+    );
+  }
+);
 
-const Result = () => {
+const View = React.forwardRef<HTMLDivElement, ViewProps>(() => {
   return <Primitive.div></Primitive.div>;
-};
+});
 
-const Empty = () => {
+const Result = React.forwardRef<HTMLDivElement, ResultProps>(() => {
   return <Primitive.div></Primitive.div>;
-};
+});
+
+const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
+  (props, forwardedRef) => {
+    return <Primitive.div ref={forwardedRef} {...props} kit-cmd-empty="" />;
+  }
+);
 
 export { Command as CommandRoot };
 export { Result as CommandResult };
