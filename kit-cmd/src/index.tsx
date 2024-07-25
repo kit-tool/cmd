@@ -487,6 +487,7 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
 
 export { Command as CommandRoot };
 export { Result as CommandResult };
+export { View as CommandView };
 export { List as CommandList };
 export { Item as CommandItem };
 export { Input as CommandInput };
