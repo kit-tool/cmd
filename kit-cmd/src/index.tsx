@@ -70,6 +70,7 @@ type Group = {
 
 const ITEM_SELECTOR = `[kit-cmd-item=""]`;
 const VALID_ITEM_SELECTOR = `${ITEM_SELECTOR}:not([aria-disabled="true"])`;
+const SELECT_EVENT = `kit-cmd-item-select`
 const VALUE_ATTR = `data-value`;
 
 const CommandContext = React.createContext<Context | undefined>(undefined);
@@ -159,13 +160,14 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     );
 
     /**
-     * 选择第一个 Item
+     * 获取第一个 Item 选项的值
      */
     function selectFirstItem() {
-      // 过滤禁用的 Item DOM
+      // 过滤 Item 列表不为禁用的第一个 DOM
       const item = getValidItems().find(
         (item) => item.getAttribute("aria-disabled") !== "true"
       );
+      // 获取第一个选项的value值
       const value = item?.getAttribute(VALUE_ATTR);
       store.setState("value", value || "");
     }
@@ -186,8 +188,54 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       );
     }
 
+    function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+      etc.onKeyDown?.(e);
+
+      if (!e.defaultPrevented) {
+        switch (e.key) {
+          case "ArrowDown": {
+            break;
+          }
+          case "ArrowUp": {
+            break;
+          }
+          case "Home": {
+            // First item
+            e.preventDefault();
+            break;
+          }
+          case "End": {
+            // Last item
+            e.preventDefault();
+            break;
+          }
+          case 'Enter': {
+            // Check if IME composition is finished before triggering onSelect
+            // This prevents unwanted triggering while user is still inputting text with IME
+            // e.keyCode === 229 is for the Japanese IME and Safari.
+            // isComposing does not work with Japanese IME and Safari combination.
+            if (!e.nativeEvent.isComposing && e.keyCode !== 229) {
+              // Trigger item onSelect
+              e.preventDefault()
+              const item = getSelectedItem()
+              if (item) {
+                const event = new Event(SELECT_EVENT)
+                item.dispatchEvent(event)
+              }
+            }
+          }
+        }
+      }
+    }
+
     return (
-      <Primitive.div ref={forwardedRef} tabIndex={-1}>
+      <Primitive.div
+        ref={forwardedRef}
+        tabIndex={-1}
+        {...etc}
+        kit-cmd-root
+        onKeyDown={onKeyDown}
+      >
         {SlottableWithNestedChildren(props, (child) => (
           <StoreContext.Provider value={store}>
             <CommandContext.Provider value={context}>
