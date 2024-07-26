@@ -15,6 +15,7 @@ type CommandProps = Children &
     label?: string;
     value?: string;
     onValueChange?: (value: string) => void;
+    switchView?: boolean;
     disablePointerSelection?: boolean;
   };
 
@@ -23,21 +24,14 @@ type ListProps = Children &
     label?: string;
   };
 
-type ResultProps = Children &
-  DivProps & {
-    switchView?: boolean;
-  };
-
-type ViewProps = Children &
-  DivProps & {
-    label?: string;
-  };
+type ViewProps = Children & DivProps & {};
 
 type ItemProps = Children &
   Omit<DivProps, "disabled" | "onSelect" | "value"> & {
     disabled?: boolean;
     onSelect?: (value: string) => void;
     value?: string;
+    view?: string;
   };
 
 type GroupProps = Children &
@@ -61,6 +55,7 @@ type Context = {
   label: string;
   disablePointerSelection: boolean;
   // Ids
+  viewId: string;
   listId: string;
   labelId: string;
   inputId: string;
@@ -71,6 +66,7 @@ type Context = {
 type State = {
   search: string;
   value: string;
+  view: string;
 };
 
 type Store = {
@@ -108,6 +104,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     const state = useLazyRef<State>(() => ({
       search: "",
       value: "",
+      view: "",
     }));
 
     const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
@@ -122,6 +119,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       ...etc
     } = props;
 
+    const viewId = useId();
     const listId = useId();
     const labelId = useId();
     const inputId = useId();
@@ -172,6 +170,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         },
         label: label || props["aria-label"] || "",
         disablePointerSelection,
+        viewId,
         listId,
         inputId,
         labelId,
@@ -362,6 +361,7 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
         {...etc}
         id={id}
         kit-cmd-item=""
+        role="option"
         aria-disabled={Boolean(disabled)}
         aria-selected={Boolean(selected)}
         data-disabled={Boolean(disabled)}
@@ -389,6 +389,7 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
         ref={mergeRefs([ref, forwardedRef])}
         {...etc}
         kit-cmd-group=""
+        role="presentation"
       >
         {heading && (
           <div ref={headingRef} aria-hidden id={headingId}>
@@ -459,6 +460,9 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
   (props, forwardedRef) => {
     const { children, label = "Suggestions", ...etc } = props;
     const ref = React.useRef<HTMLDivElement>(null);
+    const height = React.useRef<HTMLDivElement>(null);
+    const context = useCommand();
+
     return (
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
@@ -466,18 +470,41 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
         kit-cmd-list=""
         role="listbox"
         aria-label={label}
-      ></Primitive.div>
+        hidden={false}
+      >
+        {SlottableWithNestedChildren(props, (child) => (
+          <div
+            ref={mergeRefs([height, context!.listInnerRef])}
+            kit-cmd-list-sizer=""
+          >
+            {child}
+          </div>
+        ))}
+      </Primitive.div>
     );
   }
 );
 
-const View = React.forwardRef<HTMLDivElement, ViewProps>(() => {
-  return <Primitive.div></Primitive.div>;
-});
+const View = React.forwardRef<HTMLDivElement, ViewProps>(
+  (props, forwardedRef) => {
+    const ref = React.useRef<HTMLDivElement>(null);
 
-const Result = React.forwardRef<HTMLDivElement, ResultProps>(() => {
-  return <Primitive.div></Primitive.div>;
-});
+    return (
+      <Primitive.div
+        ref={mergeRefs([ref, forwardedRef])}
+        {...props}
+        kit-cmd-view=""
+        hidden={false}
+      >
+        {SlottableWithNestedChildren(props, (child) => (
+          <div kit-cmd-view-sizer="" role="region">
+            {child}
+          </div>
+        ))}
+      </Primitive.div>
+    );
+  }
+);
 
 const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
   (props, forwardedRef) => {
@@ -486,7 +513,6 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
 );
 
 export { Command as CommandRoot };
-export { Result as CommandResult };
 export { View as CommandView };
 export { List as CommandList };
 export { Item as CommandItem };
