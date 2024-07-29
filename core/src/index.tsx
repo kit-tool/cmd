@@ -427,7 +427,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const isControlled = props.value != null;
     const store = useStore();
     const search = useCmd((state) => state.search);
+    const value = useCmd((state) => state.value);
     const context = useCommand();
+
+    const selectedItemId = React.useMemo(() => {
+      const item = context!.listInnerRef.current?.querySelector(
+        `${ITEM_SELECTOR}[${VALUE_ATTR}="${encodeURIComponent(value)}"]`
+      );
+      return item?.getAttribute("id");
+    }, []);
 
     return (
       <Primitive.input
@@ -441,7 +449,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         aria-expanded={true}
         aria-controls={context!.listId}
         aria-labelledby={context!.labelId}
-        aria-activedescendant={}
+        aria-activedescendant={selectedItemId || ""}
         id={context!.inputId}
         type="text"
         value={isControlled ? props.value : search}
@@ -511,6 +519,18 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
     return <Primitive.div ref={forwardedRef} {...props} kit-cmd-empty="" />;
   }
 );
+
+const pkg = Object.assign(Command, {
+  View,
+  List,
+  Item,
+  Input,
+  Group,
+  Separator,
+  Empty,
+});
+
+export { pkg as Command };
 
 export { Command as CommandRoot };
 export { View as CommandView };
