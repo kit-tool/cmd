@@ -5,7 +5,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "pnpm -F kit-cmd build",
     "build:watch": "pnpm -F kit-cmd build --watch",
-    "dev": "build:watch && pnpm -F kit-cmd-example dev"
+    "dev": "pnpm -F kit-cmd-example dev"
   },
   "devDependencies": {
     "tsup": "^8.2.2",

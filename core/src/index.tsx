@@ -307,7 +307,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         ref={forwardedRef}
         tabIndex={-1}
         {...etc}
-        kit-cmd-root
+        kit-cmd-root=""
         onKeyDown={onKeyDown}
       >
         {SlottableWithNestedChildren(props, (child) => (
