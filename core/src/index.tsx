@@ -10,6 +10,8 @@ type SeparatorProps = DivProps & {
   alwaysRender?: boolean;
 };
 
+type FooterProps = Children & DivProps & {};
+
 type CommandProps = Children &
   DivProps & {
     label?: string;
@@ -520,6 +522,12 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
   }
 );
 
+const Footer = React.forwardRef<HTMLDivElement, FooterProps>(
+  (props, forwardedRef) => {
+    return <Primitive.div ref={forwardedRef} {...props} kit-cmd-footer="" />;
+  }
+);
+
 const pkg = Object.assign(Command, {
   View,
   List,
@@ -528,6 +536,7 @@ const pkg = Object.assign(Command, {
   Group,
   Separator,
   Empty,
+  Footer,
 });
 
 export { pkg as Command };
@@ -540,6 +549,7 @@ export { Input as CommandInput };
 export { Group as CommandGroup };
 export { Separator as CommandSeparator };
 export { Empty as CommandEmpty };
+export { Footer as CommandFooter };
 
 function useAsRef<T>(data: T) {
   const ref = React.useRef<T>(data);
