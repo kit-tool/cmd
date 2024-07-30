@@ -17,16 +17,25 @@ type CommandProps = Children &
     label?: string;
     value?: string;
     onValueChange?: (value: string) => void;
-    switchView?: boolean;
     disablePointerSelection?: boolean;
   };
 
 type ListProps = Children &
   DivProps & {
     label?: string;
+    /**
+     * 是否一直显示此元素
+     */
+    alwaysRender?: boolean;
   };
 
-type ViewProps = Children & DivProps & {};
+type ViewProps = Children &
+  DivProps & {
+    /**
+     * 是否一直显示此元素
+     */
+    alwaysRender?: boolean;
+  };
 
 type ItemProps = Children &
   Omit<DivProps, "disabled" | "onSelect" | "value"> & {
@@ -68,7 +77,7 @@ type Context = {
 type State = {
   search: string;
   value: string;
-  view: string;
+  view: string | null;
 };
 
 type Store = {
@@ -106,7 +115,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     const state = useLazyRef<State>(() => ({
       search: "",
       value: "",
-      view: "",
+      view: null,
     }));
 
     const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
@@ -472,6 +481,12 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
     const ref = React.useRef<HTMLDivElement>(null);
     const height = React.useRef<HTMLDivElement>(null);
     const context = useCommand();
+    const propsRef = useAsRef(props);
+
+    // 是否显示当前 List
+    const render = useCmd((state) =>
+      propsRef.current.alwaysRender ? true : !state.search && !state.view
+    );
 
     return (
       <Primitive.div
@@ -480,7 +495,7 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
         kit-cmd-list=""
         role="listbox"
         aria-label={label}
-        hidden={false}
+        hidden={render}
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div
@@ -498,13 +513,19 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
 const View = React.forwardRef<HTMLDivElement, ViewProps>(
   (props, forwardedRef) => {
     const ref = React.useRef<HTMLDivElement>(null);
+    const propsRef = useAsRef(props);
+
+    // 是否显示当前 List
+    const render = useCmd((state) =>
+      propsRef.current.alwaysRender ? true : Boolean(state.view)
+    );
 
     return (
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
         {...props}
         kit-cmd-view=""
-        hidden={false}
+        hidden={render}
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div kit-cmd-view-sizer="" role="region">

@@ -37,4 +37,40 @@ const CommandInput = React.forwardRef<
 
 CommandInput.displayName = CommandPrimitive.Input.displayName;
 
-export { Command, CommandInput };
+const CommandList = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.List
+    ref={ref}
+    className={cn("h-[500px] overflow-y-auto overflow-x-hidden", className)}
+    {...props}
+  />
+));
+
+const CommandView = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.View>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.View>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.View
+    ref={ref}
+    className={cn("h-[500px] overflow-y-auto overflow-x-hidden", className)}
+    {...props}
+  />
+));
+
+const CommandFooter = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Footer>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Footer>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Footer
+    ref={ref}
+    className={cn(
+      "w-full h-10 p-2 flex justify-between items-center border-t",
+      className
+    )}
+    {...props}
+  />
+));
+
+export { Command, CommandInput, CommandList, CommandView, CommandFooter };
