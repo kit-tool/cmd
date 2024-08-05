@@ -403,7 +403,12 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
         role="presentation"
       >
         {heading && (
-          <div ref={headingRef} aria-hidden id={headingId}>
+          <div
+            ref={headingRef}
+            aria-hidden
+            kit-cmd-group-heading=""
+            id={headingId}
+          >
             {heading}
           </div>
         )}
