@@ -16,6 +16,7 @@ const Command = React.forwardRef<
     {...props}
   />
 ));
+
 Command.displayName = CommandPrimitive.displayName;
 
 const CommandInput = React.forwardRef<
@@ -74,6 +75,7 @@ const CommandSeparator = React.forwardRef<
     {...props}
   />
 ));
+
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const CommandItem = React.forwardRef<
@@ -103,6 +105,8 @@ const CommandView = React.forwardRef<
   />
 ));
 
+CommandView.displayName = CommandPrimitive.View.displayName;
+
 const CommandFooter = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Footer>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Footer>
@@ -117,4 +121,15 @@ const CommandFooter = React.forwardRef<
   />
 ));
 
-export { Command, CommandInput, CommandList, CommandView, CommandFooter };
+CommandFooter.displayName = CommandPrimitive.Footer.displayName;
+
+export {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandGroup,
+  CommandSeparator,
+  CommandItem,
+  CommandView,
+  CommandFooter,
+};

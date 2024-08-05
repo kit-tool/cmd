@@ -97,6 +97,7 @@ type Group = {
 
 const GROUP_SELECTOR = `[kit-cmd-group=""]`;
 const ITEM_SELECTOR = `[kit-cmd-item=""]`;
+const GROUP_HEADING_SELECTOR = `[kit-cmd-group-heading=""]`;
 const VALID_ITEM_SELECTOR = `${ITEM_SELECTOR}:not([aria-disabled="true"])`;
 const SELECT_EVENT = `kit-cmd-item-select`;
 const VALUE_ATTR = `data-value`;
@@ -120,6 +121,8 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
 
     const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
     const allGroups = useLazyRef<Map<string, Set<string>>>(() => new Map()); // groupId → [...itemIds]
+    const ids = useLazyRef<Map<string, { value: string }>>(() => new Map());
+    const propsRef = useAsRef(props);
 
     const {
       label,
@@ -148,9 +151,24 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         snapshot: () => {
           return state.current;
         },
-        setState: (key, value) => {
+        setState: (key, value, opts) => {
           if (Object.is(state.current[key], value)) return;
           state.current[key] = value;
+
+          if (key === "search") {
+            schedule(1, selectFirstItem);
+          } else if (key === "value") {
+            if (!opts) {
+              // Scroll the selected item into view
+              schedule(5, scrollSelectedIntoView);
+            }
+            if (propsRef.current?.value !== undefined) {
+              // If controlled, just call the callback instead of updating state internally
+              const newValue = (value ?? "") as string;
+              propsRef.current.onValueChange?.(newValue);
+              return;
+            }
+          }
 
           // Notify subscribers that state has changed
           store.emit();
@@ -163,7 +181,15 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
 
     const context: Context = React.useMemo(
       () => ({
-        value: (id, value) => {},
+        value: (id, value) => {
+          if (value !== ids.current.get(id)?.value) {
+            ids.current.set(id, { value });
+            schedule(2, () => {
+              // sort()
+              store.emit();
+            });
+          }
+        },
         item: (id, groupId) => {
           allItems.current.add(id);
 
@@ -174,10 +200,39 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
               allGroups.current.get(groupId)!.add(id);
             }
           }
-          return () => {};
+
+          schedule(3, () => {
+            if (!state.current.value) {
+              selectFirstItem();
+            }
+
+            store.emit();
+          });
+
+          return () => {
+            ids.current.delete(id);
+            allItems.current.delete(id);
+            const selectedItem = getSelectedItem();
+
+            schedule(4, () => {
+              // The item removed have been the selected one,
+              // so selection should be moved to the first
+              if (selectedItem?.getAttribute("id") === id) selectFirstItem();
+
+              store.emit();
+            });
+          };
         },
         group: (id) => {
-          return () => {};
+          // 把新增的 groupId 添加到 allGroups
+          if (!allGroups.current.has(id)) {
+            allGroups.current.set(id, new Set());
+          }
+
+          return () => {
+            ids.current.delete(id);
+            allGroups.current.delete(id);
+          };
         },
         label: label || props["aria-label"] || "",
         disablePointerSelection,
@@ -201,6 +256,23 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       // 获取第一个选项的value值
       const value = item?.getAttribute(VALUE_ATTR);
       store.setState("value", value || "");
+    }
+
+    function scrollSelectedIntoView() {
+      const item = getSelectedItem();
+
+      if (item) {
+        if (item.parentElement?.firstChild === item) {
+          // First item in Group, ensure heading is in view
+          item
+            .closest(GROUP_SELECTOR)
+            ?.querySelector(GROUP_HEADING_SELECTOR)
+            ?.scrollIntoView({ block: "nearest" });
+        }
+
+        // Ensure the item is always in view
+        item.scrollIntoView({ block: "nearest" });
+      }
     }
 
     /**
@@ -377,6 +449,9 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
         aria-selected={Boolean(selected)}
         data-disabled={Boolean(disabled)}
         data-selected={Boolean(selected)}
+        onPointerMove={
+          disabled || context?.disablePointerSelection ? undefined : select
+        }
         onClick={disabled ? undefined : onSelect}
       >
         {props.children}
@@ -470,9 +545,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type="text"
         value={isControlled ? props.value : search}
         onChange={(e) => {
-          if (!isControlled) {
-            store!.setState("search", e.target.value);
-          }
+          // if (!isControlled) {
+          //   store!.setState("search", e.target.value);
+          // }
+          store!.setState("search", e.target.value);
           onValueChange?.(e.target.value);
         }}
       />
