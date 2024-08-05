@@ -488,7 +488,11 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
           </div>
         )}
         {SlottableWithNestedChildren(props, (child) => (
-          <div role="group" aria-labelledby={heading ? headingId : undefined}>
+          <div
+            kit-cmd-group-items=""
+            role="group"
+            aria-labelledby={heading ? headingId : undefined}
+          >
             <GroupContext.Provider value={contextValue}>
               {child}
             </GroupContext.Provider>
