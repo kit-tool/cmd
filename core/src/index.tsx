@@ -78,6 +78,7 @@ type State = {
   search: string;
   value: string;
   view: string | null;
+  count: number;
 };
 
 type Store = {
@@ -117,6 +118,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       search: "",
       value: "",
       view: null,
+      count: 0,
     }));
 
     const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
@@ -156,6 +158,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           state.current[key] = value;
 
           if (key === "search") {
+            countItems();
             schedule(1, selectFirstItem);
           } else if (key === "value") {
             if (!opts) {
@@ -202,6 +205,8 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           }
 
           schedule(3, () => {
+            countItems();
+
             if (!state.current.value) {
               selectFirstItem();
             }
@@ -215,6 +220,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             const selectedItem = getSelectedItem();
 
             schedule(4, () => {
+              countItems();
               // The item removed have been the selected one,
               // so selection should be moved to the first
               if (selectedItem?.getAttribute("id") === id) selectFirstItem();
@@ -256,6 +262,10 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       // 获取第一个选项的value值
       const value = item?.getAttribute(VALUE_ATTR);
       store.setState("value", value || "");
+    }
+
+    function countItems() {
+      state.current.count = allItems.current.size;
     }
 
     function scrollSelectedIntoView() {
@@ -573,6 +583,8 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
       propsRef.current.alwaysRender ? true : !state.search && !state.view
     );
 
+    if (render) return null;
+
     return (
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
@@ -580,7 +592,7 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
         kit-cmd-list=""
         role="listbox"
         aria-label={label}
-        hidden={render}
+        // hidden={render}
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div
@@ -605,12 +617,14 @@ const View = React.forwardRef<HTMLDivElement, ViewProps>(
       propsRef.current.alwaysRender ? true : Boolean(state.view)
     );
 
+    if (render) return null;
+
     return (
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
         {...props}
         kit-cmd-view=""
-        hidden={render}
+        // hidden={render}
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div kit-cmd-view-sizer="" role="region">
@@ -624,6 +638,9 @@ const View = React.forwardRef<HTMLDivElement, ViewProps>(
 
 const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
   (props, forwardedRef) => {
+    const render = useCmd((state) => state.count !== 0);
+
+    if (render) return null;
     return <Primitive.div ref={forwardedRef} {...props} kit-cmd-empty="" />;
   }
 );
