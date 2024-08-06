@@ -11,6 +11,23 @@ import {
 import { useState } from "react";
 import { groupBy } from "./lib/utils";
 
+type SearchItem = {
+  /** 主要标题 */
+  title: string;
+  /** 副标题 */
+  subtitle: string;
+  /** 值 */
+  value: string;
+  /** 数据类型 */
+  type: string;
+  /** 列表图标 */
+  icon: string;
+};
+
+const suggestionsSearchList: SearchItem[] = [];
+
+const recommendSearchList: SearchItem[] = [];
+
 const searchMap = [
   { pluginName: "文件搜索", value: "自拍照.jpg", heading: 0 },
   { pluginName: "文件搜索", value: "喜多川.jpg", heading: 0 },
