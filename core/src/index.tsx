@@ -434,6 +434,13 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
       (state) => state.value && state.value === value.current
     );
 
+    React.useEffect(() => {
+      const element = ref.current;
+      if (!element || props.disabled) return;
+      element.addEventListener(SELECT_EVENT, onSelect);
+      return () => element.removeEventListener(SELECT_EVENT, onSelect);
+    }, [props.onSelect, props.disabled]);
+
     function onSelect() {
       select();
       propsRef.current.onSelect?.(value.current!);
@@ -577,6 +584,28 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
     const height = React.useRef<HTMLDivElement>(null);
     const context = useCommand();
     const propsRef = useAsRef(props);
+
+    React.useEffect(() => {
+      if (height.current && ref.current) {
+        const el = height.current;
+        const wrapper = ref.current;
+        let animationFrame: number;
+        const observer = new ResizeObserver(() => {
+          animationFrame = requestAnimationFrame(() => {
+            const height = el.offsetHeight;
+            wrapper.style.setProperty(
+              `--kit-cmd-list-height`,
+              height.toFixed(1) + "px"
+            );
+          });
+        });
+        observer.observe(el);
+        return () => {
+          cancelAnimationFrame(animationFrame);
+          observer.unobserve(el);
+        };
+      }
+    }, []);
 
     // 是否显示当前 List
     const render = useCmd((state) =>
