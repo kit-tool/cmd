@@ -38,7 +38,10 @@ function App() {
 
   return (
     <div className="h-screen w-full flex justify-center items-center">
-      <Command className="max-w-[800px] max-h-[606px] rounded-lg border shadow-md">
+      <Command
+        loop
+        className="max-w-[800px] max-h-[606px] rounded-lg border shadow-md"
+      >
         <CommandInput
           value={search}
           onValueChange={onSearch}

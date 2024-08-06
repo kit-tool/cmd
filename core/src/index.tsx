@@ -17,6 +17,7 @@ type CommandProps = Children &
     label?: string;
     value?: string;
     onValueChange?: (value: string) => void;
+    loop?: boolean;
     disablePointerSelection?: boolean;
   };
 
@@ -131,6 +132,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       children,
       value,
       onValueChange,
+      loop,
       disablePointerSelection = false,
       ...etc
     } = props;
@@ -264,6 +266,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       store.setState("value", value || "");
     }
 
+    /**
+     * 获取 item 数量
+     */
     function countItems() {
       state.current.count = allItems.current.size;
     }
@@ -305,12 +310,28 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       );
     }
 
+    function updateSelectedToIndex(index: number) {
+      const items = getValidItems();
+      const item = items[index];
+      if (item) store.setState("value", item.getAttribute(VALUE_ATTR)!);
+    }
+
     /**
      * 更新选中的 Item
      * @param change
      */
     function updateSelectedByItem(change: 1 | -1) {
       const selected = getSelectedItem();
+      const items = getValidItems();
+      const index = items.findIndex((item) => item === selected);
+
+      let newSelected = items[index + change];
+
+      if (propsRef.current?.loop)
+        newSelected = items[(index + change + items.length) % items.length];
+
+      if (newSelected)
+        store.setState("value", newSelected.getAttribute(VALUE_ATTR)!);
     }
 
     /**
@@ -319,7 +340,26 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
      */
     function updateSelectedByGroup(change: 1 | -1) {
       const selected = getSelectedItem();
+      let group = selected?.closest(GROUP_SELECTOR);
+      let item: HTMLElement | null | undefined;
+
+      // 循环查询相邻元素
+      while (group && !item) {
+        group =
+          change > 0
+            ? findNextSibling(group, GROUP_SELECTOR)
+            : findPreviousSibling(group, GROUP_SELECTOR);
+        item = group?.querySelector(VALID_ITEM_SELECTOR);
+      }
+
+      if (item) {
+        store.setState("value", item.getAttribute(VALUE_ATTR)!);
+      } else {
+        updateSelectedByItem(change);
+      }
     }
+
+    const last = () => updateSelectedToIndex(getValidItems().length - 1);
 
     /**
      * 选中下一个 Item
@@ -369,11 +409,13 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           case "Home": {
             // First item
             e.preventDefault();
+            updateSelectedToIndex(0);
             break;
           }
           case "End": {
             // Last item
             e.preventDefault();
+            last();
             break;
           }
           case "Enter": {
@@ -702,6 +744,36 @@ export { Group as CommandGroup };
 export { Separator as CommandSeparator };
 export { Empty as CommandEmpty };
 export { Footer as CommandFooter };
+
+/**
+ * 查找指定元素的下一个符合给定选择器的兄弟元素
+ * @param el 指定元素
+ * @param selector 给定选择器
+ * @returns 查找到的元素
+ */
+function findNextSibling(el: Element, selector: string) {
+  let sibling = el.nextElementSibling;
+
+  while (sibling) {
+    if (sibling.matches(selector)) return sibling;
+    sibling = sibling.nextElementSibling;
+  }
+}
+
+/**
+ * 查找指定元素的上一个符合给定选择器的兄弟元素
+ * @param el 指定元素
+ * @param selector 给定选择器
+ * @returns 查找到的元素
+ */
+function findPreviousSibling(el: Element, selector: string) {
+  let sibling = el.previousElementSibling;
+
+  while (sibling) {
+    if (sibling.matches(selector)) return sibling;
+    sibling = sibling.previousElementSibling;
+  }
+}
 
 function useAsRef<T>(data: T) {
   const ref = React.useRef<T>(data);
