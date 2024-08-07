@@ -31,28 +31,32 @@ const suggestionsSearchList: SearchItem[] = [];
 const recommendSearchList: SearchItem[] = [];
 
 const searchMap = [
-  { pluginName: "文件搜索", value: "自拍照.jpg", heading: 0 },
-  { pluginName: "文件搜索", value: "喜多川.jpg", heading: 0 },
-  { pluginName: "文件搜索", value: "柯南.jpg", heading: 0 },
-  { pluginName: "文件搜索", value: "柯南2.jpg", heading: 0 },
-  { pluginName: "文件搜索", value: "牛逼.jpg", heading: 0 },
-  { pluginName: "网页快开", value: "echarts", heading: 0 },
-  { pluginName: "网页快开", value: "bilibili", heading: 0 },
-  { pluginName: "网页快开", value: "柯南全集", heading: 1 },
-  { pluginName: "网页快开", value: "牛逼表情包", heading: 1 },
+  { pluginName: "文件搜索", value: "自拍照.jpg" },
+  { pluginName: "文件搜索", value: "喜多川.jpg" },
+  { pluginName: "文件搜索", value: "柯南.jpg" },
+  { pluginName: "文件搜索", value: "柯南2.jpg" },
+  { pluginName: "文件搜索", value: "牛逼.jpg" },
+  { pluginName: "网页快开", value: "echarts" },
+  { pluginName: "网页快开", value: "bilibili" },
+  { pluginName: "网页快开", value: "柯南全集" },
+  { pluginName: "网页快开", value: "牛逼表情包" },
 ];
 
 function App() {
   const [search, setSearch] = useState("");
-  const [searchGroup, setSearchGroup] = useState({});
+  const [searchGroup, setSearchGroup] = useState<typeof searchMap>([]);
 
   function onSearch(v: string) {
     const searchList = searchMap.filter(
       ({ pluginName, value }) =>
         (!pluginName.indexOf(v) || !value.indexOf(v)) && v
     );
-    setSearchGroup(groupBy(searchList, ({ heading }) => heading.toString()));
+    setSearchGroup(searchList);
     setSearch(v);
+  }
+
+  function getDimensions(value: any) {
+    console.log(value);
   }
 
   return (
@@ -67,7 +71,7 @@ function App() {
           onValueChange={onSearch}
           placeholder="欢迎使用 Kit"
         />
-        <CommandList>
+        <CommandList onDimensions={getDimensions}>
           <CommandEmpty>没有搜索结果</CommandEmpty>
           {/* {Object.entries(searchGroup).map(([key, elem]) => (
             <CommandGroup
@@ -90,10 +94,12 @@ function App() {
               文字1
               <span>文字</span>
             </CommandItem>
-            <CommandItem>
-              文字2
-              <span>文字</span>
-            </CommandItem>
+            {searchGroup.map((item) => (
+              <CommandItem key={item.pluginName + item.value}>
+                {item.pluginName}
+                <span>{item.value}</span>
+              </CommandItem>
+            ))}
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="匹配推荐"></CommandGroup>

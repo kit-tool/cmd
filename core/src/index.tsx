@@ -28,6 +28,7 @@ type ListProps = Children &
      * 是否一直显示此元素
      */
     alwaysRender?: boolean;
+    onDimensions?: (value: { height: number; width: number }) => void;
   };
 
 type ViewProps = Children &
@@ -642,7 +643,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
 const List = React.forwardRef<HTMLDivElement, ListProps>(
   (props, forwardedRef) => {
-    const { children, label = "Suggestions", ...etc } = props;
+    const { children, label = "Suggestions", onDimensions, ...etc } = props;
     const ref = React.useRef<HTMLDivElement>(null);
     const height = React.useRef<HTMLDivElement>(null);
     const context = useCommand();
@@ -656,10 +657,12 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
         const observer = new ResizeObserver(() => {
           animationFrame = requestAnimationFrame(() => {
             const height = el.offsetHeight;
+            const width = el.offsetWidth;
             wrapper.style.setProperty(
               `--kit-cmd-list-height`,
               height.toFixed(1) + "px"
             );
+            onDimensions?.({ height, width });
           });
         });
         observer.observe(el);
@@ -675,7 +678,7 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
       propsRef.current.alwaysRender ? true : !state.search && !state.view
     );
 
-    if (render) return null;
+    // if (render) return null;
 
     return (
       <Primitive.div
@@ -684,7 +687,7 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
         kit-cmd-list=""
         role="listbox"
         aria-label={label}
-        // hidden={render}
+        hidden={render}
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div
