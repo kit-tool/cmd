@@ -79,7 +79,10 @@ type State = {
   search: string;
   value: string;
   view: string | null;
-  count: number;
+  record: {
+    count: number;
+    groups: Map<string, number>;
+  };
 };
 
 type Store = {
@@ -119,7 +122,10 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       search: "",
       value: "",
       view: null,
-      count: 0,
+      record: {
+        count: 0,
+        groups: new Map(),
+      },
     }));
 
     const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
@@ -160,7 +166,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           state.current[key] = value;
 
           if (key === "search") {
-            countItems();
+            countRecord();
             schedule(1, selectFirstItem);
           } else if (key === "value") {
             if (!opts) {
@@ -207,7 +213,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           }
 
           schedule(3, () => {
-            countItems();
+            countRecord();
 
             if (!state.current.value) {
               selectFirstItem();
@@ -222,7 +228,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             const selectedItem = getSelectedItem();
 
             schedule(4, () => {
-              countItems();
+              countRecord();
               // The item removed have been the selected one,
               // so selection should be moved to the first
               if (selectedItem?.getAttribute("id") === id) selectFirstItem();
@@ -269,8 +275,12 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     /**
      * 获取 item 数量
      */
-    function countItems() {
-      state.current.count = allItems.current.size;
+    function countRecord() {
+      state.current.record.count = allItems.current.size;
+
+      for (const [groupId, group] of allGroups.current) {
+        state.current.record.groups.set(groupId, group.size);
+      }
     }
 
     function scrollSelectedIntoView() {
@@ -465,7 +475,7 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
     const context = useCommand();
     const propsRef = useAsRef(props);
 
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
       return context!.item(id, groupContext!.id);
     }, []);
 
@@ -526,8 +536,18 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
     const ref = React.useRef<HTMLDivElement>(null);
     const headingRef = React.useRef<HTMLDivElement>(null);
     const headingId = useId();
+    const context = useCommand();
+    const render = useCmd((state) => !Boolean(state.record.groups.get(id)));
+
+    useLayoutEffect(() => {
+      return context!.group(id);
+    }, []);
+
+    useValue(id, ref, [props.value, props.heading, headingRef]);
 
     const contextValue = React.useMemo(() => ({ id }), []);
+
+    if (render) return null;
 
     return (
       <Primitive.div
@@ -535,6 +555,7 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
         {...etc}
         kit-cmd-group=""
         role="presentation"
+        // hidden={render}
       >
         {heading && (
           <div
@@ -709,7 +730,7 @@ const View = React.forwardRef<HTMLDivElement, ViewProps>(
 
 const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
   (props, forwardedRef) => {
-    const render = useCmd((state) => state.count !== 0);
+    const render = useCmd((state) => state.record.count !== 0);
 
     if (render) return null;
     return <Primitive.div ref={forwardedRef} {...props} kit-cmd-empty="" />;
@@ -778,12 +799,15 @@ function findPreviousSibling(el: Element, selector: string) {
 function useAsRef<T>(data: T) {
   const ref = React.useRef<T>(data);
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     ref.current = data;
   });
 
   return ref;
 }
+
+const useLayoutEffect =
+  typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
 
 function useLazyRef<T>(fn: () => T) {
   const ref = React.useRef<T>();
@@ -809,7 +833,7 @@ function useValue(
   const valueRef = React.useRef<string>();
   const context = useCommand();
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     const value = (() => {
       for (const part of deps) {
         if (typeof part === "string") {
@@ -852,7 +876,7 @@ const useScheduleLayoutEffect = () => {
   const [s, ss] = React.useState<object>();
   const fns = useLazyRef(() => new Map<string | number, () => void>());
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     fns.current.forEach((f) => f());
     fns.current = new Map();
   }, [s]);

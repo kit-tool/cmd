@@ -66,7 +66,7 @@ function App() {
         />
         <CommandList>
           <CommandEmpty>没有搜索结果</CommandEmpty>
-          {Object.entries(searchGroup).map(([key, elem]) => (
+          {/* {Object.entries(searchGroup).map(([key, elem]) => (
             <CommandGroup
               key={key}
               heading={key === "0" ? "最佳搜索" : "匹配推荐"}
@@ -78,7 +78,10 @@ function App() {
                 </CommandItem>
               ))}
             </CommandGroup>
-          ))}
+          ))} */}
+          <CommandGroup heading="最佳搜索"></CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="匹配推荐"></CommandGroup>
         </CommandList>
         <CommandFooter />
       </Command>
