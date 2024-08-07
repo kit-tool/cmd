@@ -110,6 +110,23 @@ const CommandItem = React.forwardRef<
 
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
+const CommandIcon = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div
+      className={cn(
+        "h-5 w-5 flex items-center justify-center rounded",
+        className
+      )}
+      {...props}
+    />
+  );
+};
+
+CommandIcon.displayName = "CommandIcon";
+
 const CommandView = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.View>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.View>
@@ -147,6 +164,7 @@ export {
   CommandGroup,
   CommandSeparator,
   CommandItem,
+  CommandIcon,
   CommandView,
   CommandFooter,
 };

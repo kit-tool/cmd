@@ -547,7 +547,7 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
 
     const contextValue = React.useMemo(() => ({ id }), []);
 
-    if (render) return null;
+    // if (render) return null;
 
     return (
       <Primitive.div
@@ -555,7 +555,7 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
         {...etc}
         kit-cmd-group=""
         role="presentation"
-        // hidden={render}
+        hidden={render}
       >
         {heading && (
           <div

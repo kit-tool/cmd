@@ -5,11 +5,13 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandIcon,
   CommandSeparator,
   CommandFooter,
 } from "@/components/command";
 import { useState } from "react";
 import { groupBy } from "./lib/utils";
+import { Calculator } from "lucide-react";
 
 type SearchItem = {
   /** 主要标题 */
@@ -60,6 +62,7 @@ function App() {
         className="max-w-[800px] max-h-[606px] rounded-lg border shadow-md"
       >
         <CommandInput
+          autoFocus
           value={search}
           onValueChange={onSearch}
           placeholder="欢迎使用 Kit"
@@ -79,7 +82,19 @@ function App() {
               ))}
             </CommandGroup>
           ))} */}
-          <CommandGroup heading="最佳搜索"></CommandGroup>
+          <CommandGroup heading="最佳搜索">
+            <CommandItem>
+              <CommandIcon>
+                <Calculator className="max-h-5 max-w-5" />
+              </CommandIcon>
+              文字1
+              <span>文字</span>
+            </CommandItem>
+            <CommandItem>
+              文字2
+              <span>文字</span>
+            </CommandItem>
+          </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="匹配推荐"></CommandGroup>
         </CommandList>
