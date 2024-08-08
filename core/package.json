@@ -1,5 +1,5 @@
 {
-  "name": "kit-cmd",
+  "name": "@kit/cmd",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
@@ -33,13 +33,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kit-tool/kit-cmd.git",
+    "url": "git+https://github.com/kit-tool/cmd.git",
     "directory": "kit-cmd"
   },
   "bugs": {
-    "url": "https://github.com/kit-tool/kit-cmd/issues"
+    "url": "https://github.com/kit-tool/cmd/issues"
   },
-  "homepage": "https://github.com/kit-tool/kit-cmd#readme",
+  "homepage": "https://github.com/kit-tool/cmd#readme",
   "keywords": [
     "cmd",
     "command"

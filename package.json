@@ -1,11 +1,11 @@
 {
-  "name": "kit-cmd-root",
+  "name": "@kit/cmd-root",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pnpm -F kit-cmd build",
-    "build:watch": "pnpm -F kit-cmd build --watch",
-    "dev": "pnpm -F kit-cmd-example dev"
+    "build": "pnpm -F @kit/cmd build",
+    "build:watch": "pnpm -F @kit/cmd build --watch",
+    "dev": "pnpm -F @kit/cmd-example dev"
   },
   "devDependencies": {
     "tsup": "^8.2.2",
