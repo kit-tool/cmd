@@ -6,7 +6,6 @@ import {
   CommandGroup,
   CommandItem,
   CommandIcon,
-  CommandSeparator,
   CommandFooter,
 } from "@/components/command";
 import { useState } from "react";
@@ -126,7 +125,6 @@ function App() {
               </CommandItem>
             ))}
           </CommandGroup>
-          <CommandSeparator />
           <CommandGroup heading="匹配推荐">
             {recommendSearchList.map((item) => (
               <CommandItem key={item.value}>

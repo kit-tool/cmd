@@ -593,7 +593,14 @@ const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
     const render = useCmd((state) => !state.search);
 
     if (!alwaysRender && !render) return null;
-    return <Primitive.div ref={forwardedRef} {...etc} kit-cmd-separator="" />;
+    return (
+      <Primitive.div
+        ref={forwardedRef}
+        {...etc}
+        kit-cmd-separator=""
+        role="separator"
+      />
+    );
   }
 );
 
