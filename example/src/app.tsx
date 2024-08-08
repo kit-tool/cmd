@@ -10,8 +10,7 @@ import {
   CommandFooter,
 } from "@/components/command";
 import { useState } from "react";
-import { groupBy } from "./lib/utils";
-import { Calculator } from "lucide-react";
+import { Smile } from "lucide-react";
 
 type SearchItem = {
   /** 主要标题 */
@@ -20,38 +19,79 @@ type SearchItem = {
   subtitle: string;
   /** 值 */
   value: string;
-  /** 数据类型 */
-  type: string;
   /** 列表图标 */
   icon: string;
 };
 
-const suggestionsSearchList: SearchItem[] = [];
+const suggestionsSearchList: SearchItem[] = [
+  {
+    title: "好看的.jpg",
+    subtitle: "文件搜索",
+    value: "0",
+    icon: "",
+  },
+  {
+    title: "喜多川.png",
+    subtitle: "文件搜索",
+    value: "1",
+    icon: "",
+  },
+  {
+    title: "柯南.jpg",
+    subtitle: "文件搜索",
+    value: "2",
+    icon: "",
+  },
+  {
+    title: "大黑鱼.png",
+    subtitle: "文件搜索",
+    value: "3",
+    icon: "",
+  },
+  {
+    title: "喜多川海梦.jpg",
+    subtitle: "文件搜索",
+    value: "4",
+    icon: "",
+  },
+  {
+    title: "IDEA",
+    subtitle: "应用搜索",
+    value: "5",
+    icon: "",
+  },
+  {
+    title: "有道词典",
+    subtitle: "应用搜索",
+    value: "6",
+    icon: "",
+  },
+];
 
-const recommendSearchList: SearchItem[] = [];
-
-const searchMap = [
-  { pluginName: "文件搜索", value: "自拍照.jpg" },
-  { pluginName: "文件搜索", value: "喜多川.jpg" },
-  { pluginName: "文件搜索", value: "柯南.jpg" },
-  { pluginName: "文件搜索", value: "柯南2.jpg" },
-  { pluginName: "文件搜索", value: "牛逼.jpg" },
-  { pluginName: "网页快开", value: "echarts" },
-  { pluginName: "网页快开", value: "bilibili" },
-  { pluginName: "网页快开", value: "柯南全集" },
-  { pluginName: "网页快开", value: "牛逼表情包" },
+const recommendSearchList: SearchItem[] = [
+  {
+    title: "设置",
+    subtitle: "插件",
+    value: "7",
+    icon: "",
+  },
+  {
+    title: "插件市场",
+    subtitle: "插件",
+    value: "8",
+    icon: "",
+  },
 ];
 
 function App() {
   const [search, setSearch] = useState("");
-  const [searchGroup, setSearchGroup] = useState<typeof searchMap>([]);
+  const [suggestionsResult, setSuggestionsResult] = useState<SearchItem[]>([]);
 
   function onSearch(v: string) {
-    const searchList = searchMap.filter(
-      ({ pluginName, value }) =>
-        (!pluginName.indexOf(v) || !value.indexOf(v)) && v
+    const searchResult = suggestionsSearchList.filter(
+      ({ title, subtitle }) => (!title.indexOf(v) || !subtitle.indexOf(v)) && v
     );
-    setSearchGroup(searchList);
+    setSuggestionsResult(searchResult);
     setSearch(v);
   }
 
@@ -73,36 +113,33 @@ function App() {
         />
         <CommandList onDimensions={getDimensions}>
           <CommandEmpty>没有搜索结果</CommandEmpty>
-          {/* {Object.entries(searchGroup).map(([key, elem]) => (
-            <CommandGroup
-              key={key}
-              heading={key === "0" ? "最佳搜索" : "匹配推荐"}
-            >
-              {(elem as any[]).map(({ pluginName, value }) => (
-                <CommandItem key={pluginName + value}>
-                  <span>{pluginName}</span>
-                  <span>{value}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))} */}
           <CommandGroup heading="最佳搜索">
-            <CommandItem>
-              <CommandIcon>
-                <Calculator className="max-h-5 max-w-5" />
-              </CommandIcon>
-              文字1
-              <span>文字</span>
-            </CommandItem>
-            {searchGroup.map((item) => (
-              <CommandItem key={item.pluginName + item.value}>
-                {item.pluginName}
-                <span>{item.value}</span>
+            {suggestionsResult.map((item) => (
+              <CommandItem key={item.value}>
+                <CommandIcon>
+                  <Smile className="max-h-5 max-w-5" />
+                </CommandIcon>
+                {item.title}
+                <span className="ml-auto text-xs tracking-widest text-muted-foreground">
+                  {item.subtitle}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
           <CommandSeparator />
-          <CommandGroup heading="匹配推荐"></CommandGroup>
+          <CommandGroup heading="匹配推荐">
+            {recommendSearchList.map((item) => (
+              <CommandItem key={item.value}>
+                <CommandIcon>
+                  <Smile className="max-h-5 max-w-5" />
+                </CommandIcon>
+                {item.title}
+                <span className="ml-auto text-xs tracking-widest text-muted-foreground">
+                  {item.subtitle}
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
         </CommandList>
         <CommandFooter />
       </Command>

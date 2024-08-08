@@ -117,7 +117,7 @@ const CommandIcon = ({
   return (
     <div
       className={cn(
-        "h-5 w-5 flex items-center justify-center rounded",
+        "h-5 w-5 flex items-center justify-center overflow-hidden rounded",
         className
       )}
       {...props}
